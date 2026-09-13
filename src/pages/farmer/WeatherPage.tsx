@@ -1,138 +1,202 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useTranslation } from '../../i18n/useTranslation';
-import { CurrentWeatherCard } from '../../components/farmer/CurrentWeatherCard';
-import { MOCK_CURRENT_WEATHER } from '../../data/mockWeather';
+import { MOCK_CURRENT_WEATHER, getForecastForPanchayat } from '../../data/mockWeather';
+import { WeatherIcon } from '../../components/common/WeatherIcon';
 import {
   Sun,
+  Search,
+  MapPin,
+  Droplets,
   Wind,
-  Gauge,
-  Thermometer,
   CloudRain,
-  Compass,
-  Layers,
-  Database,
+  Gauge,
+  Thermometer
 } from 'lucide-react';
 
 export const WeatherPage: React.FC = () => {
   const { language, activePanchayat } = useApp();
-  const { t } = useTranslation(language);
+  const [horizonTab, setHorizonTab] = useState<'today' | '7days' | '15days'>('today');
 
   const weather = MOCK_CURRENT_WEATHER[activePanchayat.id] || MOCK_CURRENT_WEATHER['acharpura'];
+  const forecastData = getForecastForPanchayat(activePanchayat.id);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">
-            {t.navWeather}
+    <div className="space-y-4 max-w-xl mx-auto pb-6 animate-in fade-in duration-200">
+      
+      {/* Top Header matching Mockup Screen 5 */}
+      <div className="flex items-center justify-between pb-1">
+        <div className="flex items-center gap-2">
+          <Sun className="w-5 h-5 text-amber-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            Weather
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500">
-            {language === 'hi' ? 'स्थानीय प्रत्यक्ष सेंसर एवं माइक्रॉक्लाइमेट चर' : 'Detailed localized agromet variables and microclimate parameters'}
-          </p>
+        </div>
+
+        <button
+          type="button"
+          className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-emerald-950/60 transition-all cursor-pointer"
+          aria-label="Search location"
+        >
+          <Search className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Location line */}
+      <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold -mt-2">
+        <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+        <span>{language === 'hi' ? `${activePanchayat.nameHi}, Phanda Block` : `${activePanchayat.nameEn}, Phanda Block`}</span>
+      </div>
+
+      {/* Horizon Tabs (Today, 7 Days, 15 Days) */}
+      <div className="flex items-center bg-[#0a231e] p-1 rounded-2xl gap-1">
+        <button
+          type="button"
+          onClick={() => setHorizonTab('today')}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            horizonTab === 'today'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          onClick={() => setHorizonTab('7days')}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            horizonTab === '7days'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          7 Days
+        </button>
+        <button
+          type="button"
+          onClick={() => setHorizonTab('15days')}
+          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            horizonTab === '15days'
+              ? 'bg-emerald-600 text-white shadow-xs'
+              : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          15 Days
+        </button>
+      </div>
+
+      {/* Big Hero Weather Card */}
+      <div className="bg-card-emerald-glow rounded-3xl p-5 border border-emerald-500/30 text-white shadow-2xl relative overflow-hidden space-y-3">
+        <div className="flex items-center gap-4">
+          <div className="p-3.5 rounded-2xl bg-[#061e18]/80 border border-emerald-500/20 shrink-0">
+            <WeatherIcon condition={weather.condition} size={56} />
+          </div>
+          <div>
+            <div className="text-5xl font-black tracking-tight text-white leading-none">
+              {weather.tempC}°<span className="text-2xl font-bold text-emerald-300">C</span>
+            </div>
+            <div className="text-base font-bold text-emerald-100 mt-1">
+              {language === 'hi' ? weather.conditionTextHi : weather.conditionTextEn}
+            </div>
+            <div className="text-xs text-emerald-400/90 font-medium mt-0.5">
+              Feels Like: {weather.feelsLikeC}°C
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-emerald-900/40 text-xs text-emerald-300 font-medium flex items-center justify-between">
+          <span>↑ H: {weather.tempMaxC}°C</span>
+          <span>↓ L: {weather.tempMinC}°C</span>
+          <span>Station: {activePanchayat.weatherStationName}</span>
         </div>
       </div>
 
-      <CurrentWeatherCard />
+      {/* 2x3 Grid of Metrics matching Mockup Screen 5 */}
+      <div className="grid grid-cols-2 gap-2.5">
+        
+        {/* Humidity */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Droplets className="w-4 h-4 text-cyan-400" />
+            <span>Humidity</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.relativeHumidityPct}%</div>
+        </div>
 
-      {/* Advanced Agricultural Meteorological Variables Breakdown */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs space-y-4">
-        <h2 className="font-bold text-base text-slate-900 flex items-center gap-2">
-          <Layers size={18} className="text-emerald-700" />
-          <span>{language === 'hi' ? 'उन्नत कृषि मौसम मेट्रिक्स' : 'Advanced Agrometeorological Metrics'}</span>
+        {/* Wind Speed */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Wind className="w-4 h-4 text-teal-400" />
+            <span>Wind Speed</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.windSpeedKmh} km/h</div>
+        </div>
+
+        {/* Rainfall 24h */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <CloudRain className="w-4 h-4 text-sky-400" />
+            <span>Rainfall (24h)</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.rainfallMm24h} mm</div>
+        </div>
+
+        {/* Solar Radiation */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Sun className="w-4 h-4 text-amber-400" />
+            <span>Solar Radiation</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.solarRadiationWm2} W/m²</div>
+        </div>
+
+        {/* Evapotranspiration */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Gauge className="w-4 h-4 text-emerald-400" />
+            <span>Evapotranspiration</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.et0MmDay} mm/d</div>
+        </div>
+
+        {/* Dew Point */}
+        <div className="bg-[#0a231e] border border-emerald-500/20 p-3 rounded-2xl space-y-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-300">
+            <Thermometer className="w-4 h-4 text-indigo-400" />
+            <span>Dew Point</span>
+          </div>
+          <div className="text-lg font-black text-white">{weather.dewPointC}°C</div>
+        </div>
+
+      </div>
+
+      {/* Hourly Forecast Section matching Mockup Screen 5 */}
+      <div className="space-y-2.5 pt-1">
+        <h2 className="text-xs sm:text-sm font-bold text-slate-200 tracking-wide">
+          Hourly Forecast
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          
-          {/* ET0 */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.et0Evapo}</span>
-              <Gauge size={16} className="text-emerald-600" />
+        <div className="grid grid-cols-4 gap-2">
+          {forecastData.hourlyNext24h.slice(0, 4).map((h, idx) => (
+            <div
+              key={idx}
+              className={`p-3 rounded-2xl border text-center flex flex-col items-center justify-between ${
+                idx === 0
+                  ? 'bg-[#0f382f] border-emerald-400 shadow-md shadow-emerald-950/40'
+                  : 'bg-[#0a231e] border-emerald-900/40'
+              }`}
+            >
+              <span className="text-[11px] font-bold text-slate-300">
+                {idx === 0 ? 'Now' : h.time}
+              </span>
+              <div className="my-1.5">
+                <WeatherIcon condition={h.condition} size={24} />
+              </div>
+              <span className="text-base font-black text-white">{h.tempC}°</span>
             </div>
-            <div className="text-xl font-bold text-slate-900">{weather.et0MmDay} mm/day</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'दैनिक फसल जल वाष्पीकरण दर (सिंचाई शेड्यूलिंग हेतु)' : 'Daily reference evapotranspiration for irrigation quota.'}
-            </p>
-          </div>
-
-          {/* Solar Radiation */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.solarRadiation}</span>
-              <Sun size={16} className="text-amber-500" />
-            </div>
-            <div className="text-xl font-bold text-slate-900">{weather.solarRadiationWm2} W/m²</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'प्रकाश संश्लेषण एवं फसल ऊर्जा दक्षता' : 'Incident solar flux driving crop photosynthesis.'}
-            </p>
-          </div>
-
-          {/* Dew Point */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.dewPoint}</span>
-              <Thermometer size={16} className="text-cyan-600" />
-            </div>
-            <div className="text-xl font-bold text-slate-900">{weather.dewPointC}°C</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'पत्तियों पर ओस जमने का तापमान (फफूंद रोग संकेतक)' : 'Temperature where moisture condenses on crop leaves.'}
-            </p>
-          </div>
-
-          {/* Rainfall Accumulation */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.rainfall24h}</span>
-              <CloudRain size={16} className="text-sky-600" />
-            </div>
-            <div className="text-xl font-bold text-slate-900">{weather.rainfallMm24h} mm</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'पिछले 24 घंटों की संचित वर्षा' : 'Cumulative 24-hour recorded precipitation.'}
-            </p>
-          </div>
-
-          {/* Wind Vector */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.windSpeed} & {t.windDirection}</span>
-              <Wind size={16} className="text-teal-600" />
-            </div>
-            <div className="text-xl font-bold text-slate-900">{weather.windSpeedKmh} km/h ({weather.windDirectionCompass})</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'छिड़काव एवं कीट फैलाव आकलन' : 'Critical for agrochemical drift prevention.'}
-            </p>
-          </div>
-
-          {/* Barometric Pressure */}
-          <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-600">{t.airPressure}</span>
-              <Compass size={16} className="text-purple-600" />
-            </div>
-            <div className="text-xl font-bold text-slate-900">{weather.pressureHpa} hPa</div>
-            <p className="text-[11px] text-slate-500">
-              {language === 'hi' ? 'अस्थिरता व आंधी पूर्व चेतावनी संकेतक' : 'Local atmospheric pressure trend.'}
-            </p>
-          </div>
-
+          ))}
         </div>
       </div>
 
-      {/* Sensor Fallback & Data Quality Explainer */}
-      <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 sm:p-5 flex items-start gap-3 text-xs sm:text-sm text-emerald-950">
-        <Database size={20} className="text-emerald-700 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="font-bold text-emerald-950">
-            {language === 'hi' ? 'डेटा गुणवत्ता व फॉलबैक प्रोटोकॉल' : 'Data Integrity & Fallback Protocol'}
-          </div>
-          <p className="text-emerald-900/90 leading-relaxed text-xs">
-            {language === 'hi'
-              ? 'PanchayatMausam AI त्रिस्तरीय बैकअप आर्किटेक्चर का उपयोग करता है: 1) प्रत्यक्ष स्वचालित मौसम केंद्र सेंसर, 2) 5 किमी ग्रिडेड न्यूमेरिकल मॉडल इंटरपोलेशन, 3) ऐतिहासिक क्षेत्रीय मौसमी औसत। यदि सेंसर संचार बाधित होता है, तो सिस्टम विश्वसनीयता टैग को स्वचालित रूप से समायोजित करता है।'
-              : 'PanchayatMausam AI employs a 3-tier fallback architecture: 1) Direct local Automatic Weather Station sensors, 2) 5km gridded numerical model interpolation (NCMRWF/IMD), 3) Historical seasonal climatology. When sensors fail, confidence indicators automatically reflect the fallback state.'}
-          </p>
-        </div>
-      </div>
     </div>
   );
 };
