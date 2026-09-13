@@ -8,6 +8,7 @@ import { RiskBadge } from '../common/RiskBadge';
 import {
   Layers,
   ExternalLink,
+  MapPin
 } from 'lucide-react';
 
 export const PanchayatRiskMap: React.FC = () => {
@@ -30,48 +31,79 @@ export const PanchayatRiskMap: React.FC = () => {
   const currentWeather = MOCK_CURRENT_WEATHER[currentSelectedPin.id] || MOCK_CURRENT_WEATHER['acharpura'];
 
   return (
-    <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs space-y-4">
+    <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-4">
       {/* Map Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
         <div>
           <div className="flex items-center gap-2">
-            <Layers size={20} className="text-emerald-700" />
-            <h2 className="font-bold text-base sm:text-lg text-slate-900">
-              {language === 'hi' ? 'फंदा ब्लॉक पंचायत मौसम व जोखिम मानचित्र' : 'Phanda Block Panchayat Agromet Risk Map'}
+            <Layers size={22} className="text-emerald-700 shrink-0" />
+            <h2 className="font-bold text-base sm:text-lg text-slate-900 leading-tight">
+              {language === 'hi' ? 'फंदा ब्लॉक पंचायत जोखिम मानचित्र' : 'Phanda Block Agromet Risk Map'}
             </h2>
           </div>
           <p className="text-xs text-slate-500">
-            {language === 'hi' ? 'वास्तविक समय जोखिम स्तर एवं स्वचालित मौसम स्टेशन स्थिति' : 'Real-time spatial risk scores and Automatic Weather Station telemetrics'}
+            {language === 'hi' ? 'वास्तविक समय जोखिम स्कोर एवं एडब्लूएस स्थिति' : 'Real-time spatial risk scores and AWS telemetry'}
           </p>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2.5 text-xs font-medium">
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span className="text-[11px] text-slate-600">{t.riskLevelNormal.split(' ')[0]}</span>
+            <span className="text-slate-600">{language === 'hi' ? 'सामान्य' : 'Normal'}</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span className="text-[11px] text-slate-600">{t.riskLevelAdvisory.split(' ')[0]}</span>
+            <span className="text-slate-600">{language === 'hi' ? 'सतर्कता' : 'Advisory'}</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-            <span className="text-[11px] text-slate-600">{t.riskLevelWarning.split(' ')[0]}</span>
+            <span className="text-slate-600">{language === 'hi' ? 'चेतावनी' : 'Warning'}</span>
           </span>
         </div>
+      </div>
+
+      {/* Quick Mobile Panchayat Selector Chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+        {PANCHAYATS.map((gp) => {
+          const isSelected = gp.id === currentSelectedPin.id;
+          const risk = calculateRiskAssessment(gp.id, activeCrop.id, 'soy_pod_dev');
+          return (
+            <button
+              key={gp.id}
+              type="button"
+              onClick={() => {
+                setSelectedPinGp(gp.id);
+                selectPanchayatById(gp.id);
+              }}
+              className={`min-h-[44px] px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
+                isSelected
+                  ? 'bg-slate-900 text-white border-emerald-500 shadow-md ring-2 ring-emerald-400'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              <MapPin size={14} className={isSelected ? 'text-emerald-400' : 'text-slate-400'} />
+              <span>{language === 'hi' ? gp.nameHi : gp.nameEn}</span>
+              <span className={`w-2 h-2 rounded-full ${
+                risk.overallLevel === 'critical' ? 'bg-rose-500' :
+                risk.overallLevel === 'warning' ? 'bg-orange-500' :
+                risk.overallLevel === 'advisory' ? 'bg-amber-500' : 'bg-emerald-500'
+              }`} />
+            </button>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
         {/* Interactive SVG Map Canvas */}
-        <div className="lg:col-span-8 bg-slate-900 rounded-2xl p-4 relative overflow-hidden min-h-[340px] flex items-center justify-center border border-slate-800">
+        <div className="lg:col-span-8 bg-slate-900 rounded-3xl p-4 relative overflow-hidden min-h-[300px] sm:min-h-[340px] flex items-center justify-center border border-slate-800">
           
           {/* Map Grid Pattern background */}
           <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:24px_24px]" />
 
           {/* SVG representation of Phanda boundary */}
-          <svg viewBox="0 0 680 440" className="w-full h-auto max-h-[380px] z-10">
+          <svg viewBox="0 0 680 440" className="w-full h-auto max-h-[340px] z-10">
             {/* Phanda Block approximate boundary polygon */}
             <path
               d="M 220 50 Q 380 40, 520 80 Q 640 180, 600 320 Q 560 410, 420 420 Q 200 420, 100 340 Q 60 220, 140 120 Z"
@@ -171,7 +203,7 @@ export const PanchayatRiskMap: React.FC = () => {
         </div>
 
         {/* Selected Panchayat Detail Panel */}
-        <div className="lg:col-span-4 bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-slate-50 rounded-3xl p-4 sm:p-5 border border-slate-200 flex flex-col justify-between space-y-4">
           <div className="space-y-3">
             <div className="flex items-start justify-between">
               <div>
@@ -195,51 +227,52 @@ export const PanchayatRiskMap: React.FC = () => {
             </div>
 
             {/* Quick Weather Metrics for selected GP */}
-            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-xl border border-slate-200 text-xs">
+            <div className="grid grid-cols-2 gap-2 bg-white p-3 rounded-2xl border border-slate-200 text-xs">
               <div>
                 <span className="text-[10px] text-slate-400 block">{t.temperature}</span>
-                <span className="font-bold text-slate-800 text-base">{currentWeather.tempC}°C</span>
+                <span className="font-black text-slate-900 text-base">{currentWeather.tempC}°C</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-400 block">{t.rainfall24h}</span>
-                <span className="font-bold text-sky-700 text-base">{currentWeather.rainfallMm24h} mm</span>
+                <span className="font-black text-sky-700 text-base">{currentWeather.rainfallMm24h} mm</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-400 block">{t.relativeHumidity}</span>
-                <span className="font-bold text-slate-800">{currentWeather.relativeHumidityPct}%</span>
+                <span className="font-black text-slate-900">{currentWeather.relativeHumidityPct}%</span>
               </div>
               <div>
                 <span className="text-[10px] text-slate-400 block">{t.windSpeed}</span>
-                <span className="font-bold text-slate-800">{currentWeather.windSpeedKmh} km/h</span>
+                <span className="font-black text-slate-900">{currentWeather.windSpeedKmh} km/h</span>
               </div>
             </div>
 
             {/* Villages & Soil Type */}
-            <div className="text-xs space-y-1 text-slate-600">
+            <div className="text-xs space-y-1.5 text-slate-700 font-medium">
               <div>
-                <span className="font-semibold text-slate-700">{language === 'hi' ? 'संबद्ध गांव: ' : 'Villages: '}</span>
+                <span className="font-bold text-slate-900">{language === 'hi' ? 'संबद्ध गांव: ' : 'Villages: '}</span>
                 <span>{currentSelectedPin.villages.join(', ')}</span>
               </div>
               <div>
-                <span className="font-semibold text-slate-700">{language === 'hi' ? 'मृदा प्रकार: ' : 'Soil Type: '}</span>
+                <span className="font-bold text-slate-900">{language === 'hi' ? 'मृदा प्रकार: ' : 'Soil Type: '}</span>
                 <span>{currentSelectedPin.primarySoilType}</span>
               </div>
               <div>
-                <span className="font-semibold text-slate-700">{language === 'hi' ? 'स्टेशन स्थिति: ' : 'Station Status: '}</span>
+                <span className="font-bold text-slate-900">{language === 'hi' ? 'स्टेशन स्थिति: ' : 'Station Status: '}</span>
                 <span className={currentSelectedPin.stationStatus === 'active' ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'}>
-                  {currentSelectedPin.stationStatus === 'active' ? '🟢 Active Online' : '🟠 Degraded (Fallback Mode)'}
+                  {currentSelectedPin.stationStatus === 'active' ? '🟢 Active Online' : '🟠 Fallback Gridded Mode'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-slate-200 mt-3">
+          <div className="pt-2">
             <button
+              type="button"
               onClick={() => selectPanchayatById(currentSelectedPin.id)}
-              className="w-full py-2 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-950/20"
             >
-              <span>{language === 'hi' ? 'इस पंचायत का पूर्ण विवरण खोलें' : 'Set as Active Workspace'}</span>
-              <ExternalLink size={13} />
+              <span>{language === 'hi' ? 'इस पंचायत को सक्रिय करें' : 'Set as Active Workspace'}</span>
+              <ExternalLink size={14} />
             </button>
           </div>
         </div>

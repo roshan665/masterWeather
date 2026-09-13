@@ -5,12 +5,14 @@ interface AudioReaderProps {
   textToRead: string;
   language: 'hi' | 'en';
   label?: string;
+  compact?: boolean;
 }
 
 export const AudioReader: React.FC<AudioReaderProps> = ({
   textToRead,
   language,
   label,
+  compact = false,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -55,17 +57,17 @@ export const AudioReader: React.FC<AudioReaderProps> = ({
     <button
       onClick={handleTogglePlay}
       type="button"
-      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-xs md:text-sm transition-all shadow-xs cursor-pointer ${
+      className={`inline-flex items-center justify-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-xl font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer active:scale-95 ${
         isPlaying
-          ? 'bg-emerald-600 text-white shadow-emerald-200 shadow-md ring-2 ring-emerald-300'
-          : 'bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100'
+          ? 'bg-emerald-600 text-white shadow-emerald-950/30 shadow-md ring-2 ring-emerald-300 animate-pulse'
+          : 'bg-emerald-50 text-emerald-900 border border-emerald-300 hover:bg-emerald-100'
       }`}
-      aria-label={isPlaying ? 'Stop audio' : 'Listen audio'}
+      aria-label={isPlaying ? 'Stop audio playback' : 'Listen advisory aloud in audio'}
     >
       {isPlaying ? (
         <>
-          <VolumeX size={16} className="shrink-0 animate-pulse" />
-          <span>{language === 'hi' ? 'आवाज रोकें' : 'Stop Audio'}</span>
+          <VolumeX size={18} className="shrink-0 text-white" />
+          <span>{language === 'hi' ? 'रोकें' : 'Stop'}</span>
           <span className="flex space-x-0.5 items-center">
             <span className="w-1 h-3 bg-white animate-bounce rounded-full" style={{ animationDelay: '0ms' }} />
             <span className="w-1 h-4 bg-white animate-bounce rounded-full" style={{ animationDelay: '150ms' }} />
@@ -74,9 +76,9 @@ export const AudioReader: React.FC<AudioReaderProps> = ({
         </>
       ) : (
         <>
-          <Volume2 size={16} className="shrink-0 text-emerald-600" />
-          <span>{label || (language === 'hi' ? 'सलाह सुनें (ऑडियो)' : 'Listen Advisory (Audio)')}</span>
-          <Sparkles size={13} className="text-amber-500 shrink-0" />
+          <Volume2 size={18} className="shrink-0 text-emerald-700" />
+          <span>{label || (compact ? (language === 'hi' ? 'सुनें' : 'Listen') : (language === 'hi' ? 'सलाह सुनें (आवाज़ में)' : 'Listen Advisory'))}</span>
+          <Sparkles size={14} className="text-amber-500 shrink-0 hidden sm:inline" />
         </>
       )}
     </button>

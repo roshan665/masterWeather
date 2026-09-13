@@ -35,8 +35,63 @@ export const GPWeatherMatrix: React.FC = () => {
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="overflow-x-auto custom-scrollbar">
+      {/* Mobile Card View (< md) */}
+      <div className="md:hidden space-y-3">
+        {PANCHAYATS.map((gp) => {
+          const weather = MOCK_CURRENT_WEATHER[gp.id] || MOCK_CURRENT_WEATHER['acharpura'];
+          const risk = calculateRiskAssessment(gp.id, activeCrop.id, 'soy_pod_dev');
+
+          return (
+            <div
+              key={gp.id}
+              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <WeatherIcon condition={weather.condition} size={24} />
+                  <div>
+                    <h3 className="font-extrabold text-sm text-slate-900">{language === 'hi' ? gp.nameHi : gp.nameEn}</h3>
+                    <span className="text-[11px] text-slate-500">{gp.weatherStationId}</span>
+                  </div>
+                </div>
+                <RiskBadge level={risk.overallLevel} score={risk.overallScore} language={language} size="sm" />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 bg-white p-2.5 rounded-xl border border-slate-200 text-center text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 block">{t.temperature}</span>
+                  <span className="font-black text-slate-900">{weather.tempC}°C</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">{t.rainfall24h}</span>
+                  <span className="font-black text-sky-700">{weather.rainfallMm24h} mm</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">{t.relativeHumidity}</span>
+                  <span className="font-black text-slate-900">{weather.relativeHumidityPct}%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200 text-xs">
+                <span className="text-slate-500 text-[11px]">
+                  {language === 'hi' ? 'हवा: ' : 'Wind: '}{weather.windSpeedKmh} km/h • ET₀: {weather.et0MmDay} mm/d
+                </span>
+                <button
+                  type="button"
+                  onClick={() => selectPanchayatById(gp.id)}
+                  className="px-3 py-1.5 min-h-[38px] bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center gap-1"
+                >
+                  <span>{language === 'hi' ? 'चुनें' : 'Select'}</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Table Container (>= md) */}
+      <div className="hidden md:block overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">

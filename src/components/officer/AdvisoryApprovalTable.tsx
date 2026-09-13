@@ -159,8 +159,84 @@ export const AdvisoryApprovalTable: React.FC = () => {
         })}
       </div>
 
-      {/* Advisory Queue Table */}
-      <div className="overflow-x-auto custom-scrollbar">
+      {/* Mobile Card View (< md) */}
+      <div className="md:hidden space-y-3">
+        {filteredAdvisories.map((adv) => (
+          <div
+            key={adv.id}
+            className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2.5"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                <span>{language === 'hi' ? adv.panchayatNameHi : adv.panchayatNameEn}</span>
+                <span className="text-slate-400">•</span>
+                <span className="text-emerald-800 capitalize">{adv.cropId} ({language === 'hi' ? adv.stageNameHi : adv.stageNameEn})</span>
+              </div>
+              <RiskBadge severity={adv.riskLevel} size="sm" />
+            </div>
+
+            <div>
+              <h4 className="font-extrabold text-sm text-slate-900 leading-snug">
+                {language === 'hi' ? adv.titleHi : adv.titleEn}
+              </h4>
+              <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">
+                {language === 'hi' ? adv.shortSummaryHi : adv.shortSummaryEn}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 text-slate-500">
+              <div className="flex items-center gap-2">
+                {adv.approvalStatus === 'approved' && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-md">
+                    <CheckCircle2 size={12} />
+                    {language === 'hi' ? 'स्वीकृत' : 'Approved'}
+                  </span>
+                )}
+                {adv.approvalStatus === 'pending_review' && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded-md">
+                    <Clock size={12} />
+                    {language === 'hi' ? 'समीक्षाधीन' : 'Pending'}
+                  </span>
+                )}
+                {adv.approvalStatus === 'rejected' && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-rose-800 font-bold bg-rose-100 px-2 py-0.5 rounded-md">
+                    <XCircle size={12} />
+                    {language === 'hi' ? 'अस्वीकृत' : 'Rejected'}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAdvisory(adv);
+                    setIsReviewModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 min-h-[38px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs"
+                >
+                  {language === 'hi' ? 'समीक्षा' : 'Review'}
+                </button>
+                {adv.approvalStatus === 'pending_review' && (
+                  <PermissionGate permission="approve_advisories" disabledMode disabledTooltip="Only Officer or Admin can approve advisories">
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(adv.id)}
+                      className="px-3 py-1.5 min-h-[38px] bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center gap-1"
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{language === 'hi' ? 'अनुमोदन' : 'Approve'}</span>
+                    </button>
+                  </PermissionGate>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Advisory Queue Desktop Table (>= md) */}
+      <div className="hidden md:block overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">

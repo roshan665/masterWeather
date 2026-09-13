@@ -208,8 +208,72 @@ export const ObservationReviewQueue: React.FC = () => {
         </div>
       </div>
 
-      {/* Observations Table */}
-      <div className="overflow-x-auto custom-scrollbar">
+      {/* Mobile Observations Cards (< md) */}
+      <div className="md:hidden space-y-3">
+        {filteredObservations.length === 0 ? (
+          <div className="py-8 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-xs">
+            {language === 'hi' ? 'कोई अवलोकन रिपोर्ट नहीं मिली।' : 'No observation reports found.'}
+          </div>
+        ) : (
+          filteredObservations.map((obs) => (
+            <div
+              key={obs.id}
+              className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="font-bold text-slate-900 text-xs sm:text-sm block">{obs.farmerName}</span>
+                  <span className="text-[11px] text-slate-500">{obs.villageNameEn}, GP {obs.panchayatNameEn}</span>
+                </div>
+                {obs.status === 'verified' && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded-md">
+                    <CheckCircle size={12} />
+                    Verified
+                  </span>
+                )}
+                {obs.status === 'pending' && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-amber-800 font-bold bg-amber-100 px-2 py-0.5 rounded-md">
+                    <Clock size={12} />
+                    Pending
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs bg-white p-2.5 rounded-xl border border-slate-200">
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Rain / Soil</span>
+                  <span className="font-bold text-slate-800">{obs.observedRainfallMm || 0}mm • {obs.soilCondition}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block">Crop / Stage</span>
+                  <span className="font-bold text-slate-800 capitalize">{obs.cropId} ({obs.cropStageEn})</span>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-700 font-medium">
+                {obs.pestSymptomsEn || obs.cropStressNotesEn || (language === 'hi' ? 'सामान्य फसल स्थिति' : 'Normal crop condition')}
+              </p>
+
+              <div className="flex items-center justify-between pt-1 border-t border-slate-200 text-xs text-slate-400 font-mono">
+                <span>{obs.submittedAt.slice(0, 16)}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedObs(obs);
+                    setIsModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 min-h-[38px] bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl"
+                >
+                  {language === 'hi' ? 'समीक्षा करें' : 'Review'}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Observations Desktop Table (>= md) */}
+      <div className="hidden md:block overflow-x-auto custom-scrollbar">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] tracking-wider border-b border-slate-200">
