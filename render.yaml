@@ -31,10 +31,6 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: panchayatmausam-backend
-          property: url
-          suffix: /api/v1
+        value: https://panchayatmausam-backend.onrender.com/api/v1
       - key: VITE_USE_BACKEND_API
         value: "true"
