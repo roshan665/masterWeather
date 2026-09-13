@@ -24,7 +24,7 @@ export const MobileBottomNav: React.FC = () => {
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#061613]/98 backdrop-blur-xl border-t border-emerald-900/50 px-2 py-1.5 pb-safe flex justify-around items-center shadow-2xl"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#061613]/98 backdrop-blur-xl border-t border-emerald-900/50 px-2 pt-1.5 nav-pb-safe flex justify-around items-center shadow-2xl"
     >
       {role === 'farmer' ? (
         <>

@@ -53,7 +53,11 @@
 
 /* Safe area insets for modern mobile devices */
 .pb-safe {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+.nav-pb-safe {
+  padding-bottom: max(0.4rem, env(safe-area-inset-bottom, 0.4rem));
 }
 
 .pt-safe {
