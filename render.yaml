@@ -18,8 +18,9 @@ services:
         generateValue: true
 
   # 2. React + Vite Frontend Static Site
-  - type: static_site
+  - type: web
     name: panchayatmausam-frontend
+    env: static
     rootDir: .
     plan: free
     buildCommand: npm install && npm run build
