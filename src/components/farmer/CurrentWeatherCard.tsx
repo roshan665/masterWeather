@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useLiveWeather } from '../../context/LiveWeatherContext';
 import { useTranslation } from '../../i18n/useTranslation';
-import { MOCK_CURRENT_WEATHER } from '../../data/mockWeather';
 import { WeatherIcon } from '../common/WeatherIcon';
 import { ConfidenceBadge } from '../common/ConfidenceBadge';
 import {
@@ -11,14 +11,17 @@ import {
   CloudRain,
   Compass,
   AlertTriangle,
-  Clock
+  Clock,
+  RefreshCw,
+  Radio
 } from 'lucide-react';
 
 export const CurrentWeatherCard: React.FC = () => {
   const { language, activePanchayat } = useApp();
   const { t } = useTranslation(language);
+  const { weather, isLive, isRefreshing, lastUpdated, refreshWeather } = useLiveWeather();
 
-  const weather = MOCK_CURRENT_WEATHER[activePanchayat.id] || MOCK_CURRENT_WEATHER['acharpura'];
+  const formattedTime = lastUpdated ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
   return (
     <div className="bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-950 text-white rounded-3xl p-4 sm:p-6 shadow-xl border border-emerald-800/40 relative overflow-hidden">
@@ -26,7 +29,7 @@ export const CurrentWeatherCard: React.FC = () => {
       <div className="absolute -right-10 -top-10 w-48 h-48 sm:w-64 sm:h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute left-1/3 -bottom-12 w-36 h-36 sm:w-48 sm:h-48 bg-teal-500/10 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Top Header: Location, Freshness & Confidence */}
+      {/* Top Header: Location, Freshness, Live Status & Refresh Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3.5 border-b border-emerald-800/50">
         <div>
           <div className="flex items-center gap-2">
@@ -37,22 +40,46 @@ export const CurrentWeatherCard: React.FC = () => {
               {activePanchayat.block}, {activePanchayat.district}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-300/80 mt-1">
-            <Clock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span>
-              {language === 'hi' ? 'मौसम अभी • 10 मिनट पहले अपडेट' : 'Current Weather • Updated 10m ago'}
-            </span>
+
+          <div className="flex items-center gap-2 text-xs text-emerald-300/80 mt-1">
+            {isLive ? (
+              <span className="inline-flex items-center gap-1 text-[11px] text-emerald-400 font-bold bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <Radio className="w-3 h-3 text-emerald-400" />
+                {language === 'hi' ? 'लाइव ओपन-मेटियो' : 'Live Open-Meteo'}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-semibold bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500/30">
+                <Clock className="w-3 h-3" />
+                {language === 'hi' ? 'क्षेत्रीय जलवायु' : 'Regional Baseline'}
+              </span>
+            )}
+
+            <div className="flex items-center gap-1 text-emerald-300/70">
+              <span>{language === 'hi' ? `अपडेट: ${formattedTime}` : `Updated: ${formattedTime}`}</span>
+            </div>
           </div>
         </div>
 
-        {/* Confidence and Fallback Badge */}
-        <div className="self-start sm:self-auto">
+        {/* Confidence & Manual Refresh Button */}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <ConfidenceBadge
             confidence={weather.confidence}
             dataSourceLabel={language === 'hi' ? weather.dataSourceLabelHi : weather.dataSourceLabelEn}
             isFallback={weather.isFallback}
             language={language}
           />
+
+          <button
+            type="button"
+            onClick={() => refreshWeather()}
+            disabled={isRefreshing}
+            className="p-1.5 rounded-xl bg-emerald-900/60 hover:bg-emerald-800 text-emerald-200 border border-emerald-700/50 transition-all cursor-pointer disabled:opacity-50"
+            title={language === 'hi' ? 'ताज़ा लाइव मौसम लोड करें' : 'Refresh live weather'}
+            aria-label="Refresh weather data"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+          </button>
         </div>
       </div>
 
@@ -62,8 +89,8 @@ export const CurrentWeatherCard: React.FC = () => {
           <AlertTriangle size={18} className="text-amber-400 shrink-0" />
           <span>
             {language === 'hi'
-              ? 'स्थानीय स्टेशन बैकअप मोड में है। 5 किमी ग्रिडेड न्यूमेरिकल मॉडल अनुमान का उपयोग किया गया है।'
-              : 'Local station in fallback mode. Using 5km gridded numerical reanalysis model.'}
+              ? 'लाइव मौसम सर्वर से संपर्क बाधित है। स्थानीय सत्यापित जलवायु मॉडल का उपयोग किया जा रहा है।'
+              : 'Live weather service unreachable. Using localized climatological estimates.'}
           </span>
         </div>
       )}
@@ -89,7 +116,7 @@ export const CurrentWeatherCard: React.FC = () => {
             <div className="text-xs sm:text-sm text-emerald-300/90 flex flex-wrap items-center gap-1.5 mt-1 font-medium">
               <span>{t.feelsLike}: {weather.feelsLikeC}°C</span>
               <span>•</span>
-              <span>अधिकतम: {weather.tempMaxC}°C / न्यूनतम: {weather.tempMinC}°C</span>
+              <span>{language === 'hi' ? `अधिकतम: ${weather.tempMaxC}°C / न्यूनतम: ${weather.tempMinC}°C` : `High: ${weather.tempMaxC}°C / Low: ${weather.tempMinC}°C`}</span>
             </div>
           </div>
         </div>
@@ -137,7 +164,7 @@ export const CurrentWeatherCard: React.FC = () => {
               <span className="text-slate-200 text-xs font-semibold">{t.et0Evapo}</span>
             </div>
             <div className="text-lg sm:text-xl font-black text-white">
-              {weather.et0MmDay} <span className="text-xs font-normal text-slate-300">mm/दिन</span>
+              {weather.et0MmDay} <span className="text-xs font-normal text-slate-300">{language === 'hi' ? 'mm/दिन' : 'mm/day'}</span>
             </div>
           </div>
 
@@ -145,18 +172,18 @@ export const CurrentWeatherCard: React.FC = () => {
 
       </div>
 
-      {/* Footer Details: Wind Direction & Solar Radiation */}
+      {/* Footer Details: Wind Direction & Spray Recommendation */}
       <div className="pt-3 border-t border-emerald-800/40 flex flex-wrap items-center justify-between gap-2 text-xs text-emerald-300/80">
         <div className="flex items-center gap-2">
           <Compass size={14} className="text-emerald-400 shrink-0" />
           <span>{t.windDirection}: {weather.windDirectionCompass} ({weather.windDirectionDeg}°)</span>
           <span>•</span>
-          <span className="hidden sm:inline">{t.solarRadiation}: {weather.solarRadiationWm2} W/m²</span>
+          <span>{language === 'hi' ? `दबाव: ${weather.pressureHpa} hPa` : `Pressure: ${weather.pressureHpa} hPa`}</span>
         </div>
         <div className="text-[11px] text-amber-300 font-bold">
-          {weather.windSpeedKmh < 12
+          {weather.windSpeedKmh < 13
             ? (language === 'hi' ? '✓ स्प्रे हेतु अनुकूल हवा' : '✓ Favourable spray wind')
-            : (language === 'hi' ? '⚠ तेज हवा - स्प्रे से बचें' : '⚠ High wind - avoid spray')}
+            : (language === 'hi' ? '⚠ तेज हवा - कीटनाशक छिड़काव से बचें' : '⚠ High wind - avoid spray')}
         </div>
       </div>
     </div>

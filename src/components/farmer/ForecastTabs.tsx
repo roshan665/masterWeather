@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useLiveWeather } from '../../context/LiveWeatherContext';
 import { useTranslation } from '../../i18n/useTranslation';
-import { getForecastForPanchayat } from '../../data/mockWeather';
 import { WeatherIcon } from '../common/WeatherIcon';
 import { ConfidenceBadge } from '../common/ConfidenceBadge';
 import {
@@ -14,17 +14,21 @@ import {
   AlertCircle,
   XCircle,
   CloudRain,
-  ListFilter
+  ListFilter,
+  Radio,
+  RefreshCw
 } from 'lucide-react';
 
 export const ForecastTabs: React.FC = () => {
-  const { language, activePanchayat } = useApp();
+  const { language } = useApp();
   const { t } = useTranslation(language);
+  const { hourly24h, daily7d, isLive, isRefreshing, refreshWeather } = useLiveWeather();
 
   const [activeTab, setActiveTab] = useState<'hourly' | '1to3d' | '4to7d'>('hourly');
   const [showTableView, setShowTableView] = useState(false);
 
-  const forecastData = getForecastForPanchayat(activePanchayat.id);
+  const daily1to3d = daily7d.slice(0, 3);
+  const daily4to7d = daily7d.slice(3, 7);
 
   const getSprayBadge = (suitability: 'optimal' | 'marginal' | 'unfavourable', reasonEn: string, reasonHi: string) => {
     switch (suitability) {
@@ -56,16 +60,36 @@ export const ForecastTabs: React.FC = () => {
     <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-4">
       {/* Header & Tab Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-        <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-emerald-700 shrink-0" />
-          <div>
-            <h2 className="font-bold text-base sm:text-lg text-slate-900 leading-tight">
-              {language === 'hi' ? 'मौसम पूर्वानुमान' : 'Weather Forecasts'}
-            </h2>
-            <p className="text-xs text-slate-500">
-              {language === 'hi' ? 'स्प्रे समय एवं वर्षा संभावना' : 'Spray timing & rain probability'}
-            </p>
+        <div className="flex items-center justify-between w-full sm:w-auto">
+          <div className="flex items-center gap-2">
+            <Calendar size={20} className="text-emerald-700 shrink-0" />
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-bold text-base sm:text-lg text-slate-900 leading-tight">
+                  {language === 'hi' ? 'मौसम पूर्वानुमान' : 'Weather Forecasts'}
+                </h2>
+                {isLive && (
+                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-300">
+                    <Radio className="w-2.5 h-2.5 text-emerald-600" />
+                    <span>Live</span>
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                {language === 'hi' ? 'स्प्रे समय एवं वर्षा संभावना' : 'Spray timing & rain probability'}
+              </p>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => refreshWeather()}
+            disabled={isRefreshing}
+            className="sm:hidden p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600' : ''}`} />
+          </button>
         </div>
 
         {/* Tab Buttons (Large touch targets for thumbs) */}
@@ -128,7 +152,7 @@ export const ForecastTabs: React.FC = () => {
           {!showTableView ? (
             /* Horizontal Scroll Cards */
             <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 custom-scrollbar">
-              {forecastData.hourlyNext24h.map((h, idx) => (
+              {hourly24h.map((h, idx) => (
                 <div
                   key={idx}
                   className="flex-1 min-w-[145px] max-w-[165px] p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all flex flex-col justify-between shrink-0"
@@ -190,7 +214,7 @@ export const ForecastTabs: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-800">
-                  {forecastData.hourlyNext24h.map((h, idx) => (
+                  {hourly24h.map((h, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
                       <td className="p-2.5 font-bold">{h.time}</td>
                       <td className="p-2.5 font-extrabold">{h.tempC}°C</td>
@@ -211,7 +235,7 @@ export const ForecastTabs: React.FC = () => {
       {/* Tab 2: 1-3 Days Forecast */}
       {activeTab === '1to3d' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {forecastData.daily1to3d.map((d, idx) => (
+          {daily1to3d.map((d, idx) => (
             <div
               key={idx}
               className="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-300 transition-all flex flex-col justify-between"
@@ -265,7 +289,7 @@ export const ForecastTabs: React.FC = () => {
       {/* Tab 3: 4-7 Days Outlook */}
       {activeTab === '4to7d' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {forecastData.daily4to7d.map((d, idx) => (
+          {daily4to7d.map((d, idx) => (
             <div
               key={idx}
               className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col justify-between"

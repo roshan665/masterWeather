@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useLiveWeather } from '../../context/LiveWeatherContext';
 import { useMockData } from '../../context/MockDataContext';
-import { getForecastForPanchayat, MOCK_CURRENT_WEATHER } from '../../data/mockWeather';
 import { CROPS } from '../../data/crops';
 import { ObservationFormModal } from '../../components/farmer/ObservationFormModal';
 import { WeatherIcon } from '../../components/common/WeatherIcon';
@@ -15,20 +15,20 @@ import {
   ChevronRight,
   Camera,
   Bug,
-  Sprout
+  Sprout,
+  Radio,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const FarmerHomePage: React.FC = () => {
   const { language, activePanchayat, activeCrop, setActiveCrop } = useApp();
   const { alerts, advisories } = useMockData();
+  const { weather, daily7d, isLive, isRefreshing, refreshWeather } = useLiveWeather();
   const navigate = useNavigate();
 
   const [isObservationModalOpen, setIsObservationModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'forecast' | 'advisories'>('forecast');
-
-  const weather = MOCK_CURRENT_WEATHER[activePanchayat.id] || MOCK_CURRENT_WEATHER['acharpura'];
-  const forecastData = getForecastForPanchayat(activePanchayat.id);
 
   const activeAlerts = alerts.filter(
     (a) => a.isActive && a.panchayatIds.includes(activePanchayat.id)
@@ -86,15 +86,41 @@ export const FarmerHomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Current Weather Hero Card (Glossy Dark Emerald with Glow) */}
+      {/* 3. Current Weather Hero Card (Glossy Dark Emerald with Live Status) */}
       <div className="bg-card-emerald-glow rounded-3xl p-4 sm:p-5 border border-emerald-500/30 text-white shadow-2xl relative overflow-hidden space-y-4">
         {/* Subtle glow */}
         <div className="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Card Title */}
-        <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 tracking-wide">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Current Weather</span>
+        {/* Card Title with Live Indicator & Refresh */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 tracking-wide">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Current Weather</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {isLive ? (
+              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-300 font-bold bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping inline-block" />
+                <Radio className="w-2.5 h-2.5 text-emerald-400" />
+                <span>Live Open-Meteo</span>
+              </span>
+            ) : (
+              <span className="text-[10px] text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500/30 font-medium">
+                Regional
+              </span>
+            )}
+
+            <button
+              type="button"
+              onClick={() => refreshWeather()}
+              disabled={isRefreshing}
+              className="p-1 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-800/50 transition cursor-pointer"
+              title="Refresh live weather"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
+            </button>
+          </div>
         </div>
 
         {/* Main Temperature & Condition */}
@@ -176,7 +202,7 @@ export const FarmerHomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* 5. Crop Details & Forecast/Advisories Container (Matching Mockups 3 & 4) */}
+      {/* 5. Crop Details & Forecast/Advisories Container */}
       <div className="bg-[#0a231e]/95 border border-emerald-500/25 rounded-3xl p-4 sm:p-5 shadow-xl space-y-4">
         {/* Crop Header */}
         <div className="flex items-center justify-between">
@@ -224,10 +250,10 @@ export const FarmerHomePage: React.FC = () => {
           </button>
         </div>
 
-        {/* Tab 1: Daily Forecast List */}
+        {/* Tab 1: Daily Forecast List (Real-time Live Data) */}
         {activeTab === 'forecast' && (
           <div className="space-y-2">
-            {forecastData.daily1to3d.concat(forecastData.daily4to7d.slice(0, 2)).map((d, idx) => (
+            {daily7d.slice(0, 5).map((d, idx) => (
               <div
                 key={idx}
                 onClick={() => navigate('/forecast')}
@@ -248,7 +274,7 @@ export const FarmerHomePage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-sky-400 flex items-center gap-1">
                     <CloudRain className="w-3 h-3" />
-                    <span>{d.rainfallExpectedMm || (d as any).rainfallMm || 8} mm</span>
+                    <span>{d.rainfallExpectedMm} mm</span>
                   </span>
                   <ChevronRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
                 </div>

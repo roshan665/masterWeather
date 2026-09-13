@@ -4,6 +4,8 @@ import { useTranslation } from '../../i18n/useTranslation';
 import { PANCHAYATS } from '../../data/panchayats';
 import { calculateRiskAssessment } from '../../data/mockRisks';
 import { MOCK_CURRENT_WEATHER } from '../../data/mockWeather';
+import { fetchRealtimeWeather } from '../../services/openMeteoService';
+import type { CurrentWeather } from '../../types/weather';
 import { RiskBadge } from '../common/RiskBadge';
 import {
   Layers,
@@ -28,7 +30,22 @@ export const PanchayatRiskMap: React.FC = () => {
 
   const currentSelectedPin = PANCHAYATS.find((p) => p.id === (selectedPinGp || activePanchayat.id)) || activePanchayat;
   const currentRisk = calculateRiskAssessment(currentSelectedPin.id, activeCrop.id, 'soy_pod_dev');
-  const currentWeather = MOCK_CURRENT_WEATHER[currentSelectedPin.id] || MOCK_CURRENT_WEATHER['acharpura'];
+  
+  const [currentWeather, setCurrentWeather] = useState<CurrentWeather>(
+    MOCK_CURRENT_WEATHER[currentSelectedPin.id] || MOCK_CURRENT_WEATHER['acharpura']
+  );
+
+  React.useEffect(() => {
+    let active = true;
+    fetchRealtimeWeather(currentSelectedPin).then((res) => {
+      if (active && res?.current) {
+        setCurrentWeather(res.current);
+      }
+    }).catch(() => {
+      // fallback preserved
+    });
+    return () => { active = false; };
+  }, [currentSelectedPin]);
 
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-4">

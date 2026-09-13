@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { AuthProvider } from './context/AuthContext';
 import { MockDataProvider } from './context/MockDataContext';
+import { LiveWeatherProvider } from './context/LiveWeatherContext';
 import { AppShell } from './layouts/AppShell';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
@@ -38,10 +39,11 @@ import { ResearchDashboard } from './pages/research/ResearchPages';
 export const App: React.FC = () => {
   return (
     <AppProvider>
-      <AuthProvider>
-        <MockDataProvider>
-          <BrowserRouter>
-            <Routes>
+      <LiveWeatherProvider>
+        <AuthProvider>
+          <MockDataProvider>
+            <BrowserRouter>
+              <Routes>
               {/* Standalone Login Route */}
               <Route path="/login" element={<LoginPage />} />
 
@@ -238,8 +240,9 @@ export const App: React.FC = () => {
               </Route>
             </Routes>
           </BrowserRouter>
-        </MockDataProvider>
-      </AuthProvider>
+          </MockDataProvider>
+        </AuthProvider>
+      </LiveWeatherProvider>
     </AppProvider>
   );
 };
