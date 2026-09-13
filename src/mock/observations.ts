@@ -1,0 +1,87 @@
+import type { FarmerObservation } from '../types';
+
+/**
+ * DEMO FARMER OBSERVATIONS DATA
+ * Ground-level crop and weather feedback submitted by registered farmers.
+ */
+
+export const MOCK_OBSERVATIONS: FarmerObservation[] = [
+  {
+    id: 'obs-001',
+    farmerName: 'Rameshwar Patidar (रामेश्वर पाटीदार)',
+    contactNumber: '98260XXXXX',
+    panchayatId: 'acharpura',
+    panchayatNameEn: 'Acharpura',
+    panchayatNameHi: 'अचारपुरा',
+    villageNameEn: 'Acharpura Kalan',
+    villageNameHi: 'अचारपुरा कलां',
+    cropId: 'soybean',
+    cropStageEn: 'Flowering & Blooming (R1-R2)',
+    cropStageHi: 'फूल अवस्था (पुष्प)',
+    soilCondition: 'wet',
+    observedRainfallCategory: 'moderate',
+    observedRainfallMm: 14.0,
+    pestSymptomsEn: 'Whitefly sightings on leaf underside (5-8 per plant)',
+    pestSymptomsHi: 'पत्तियों के नीचे सफेद मक्खी (5-8 प्रति पौधा)',
+    cropStressNotesEn: 'Slight yellowing starting on border rows of JS 20-34 variety.',
+    cropStressNotesHi: 'JS 20-34 किस्म की सीमावर्ती कतारों में हल्का पीलापन।',
+    latitude: 23.3642,
+    longitude: 77.3428,
+    submittedAt: '2026-09-12T11:15:00+05:30',
+    status: 'verified',
+    reviewedBy: 'Dr. S. K. Sharma',
+    reviewedAt: '2026-09-12T12:00:00+05:30',
+    reviewNotesEn: 'Confirmed whitefly presence. Advisory adv-001 linked.',
+    reviewNotesHi: 'सफेद मक्खी की पुष्टि की गई। सलाह adv-001 संलग्न।'
+  },
+  {
+    id: 'obs-002',
+    farmerName: 'Kailash Meena (कैलाश मीणा)',
+    contactNumber: '94250XXXXX',
+    panchayatId: 'ratibad',
+    panchayatNameEn: 'Ratibad',
+    panchayatNameHi: 'रातीबड़',
+    villageNameEn: 'Ratibad Khurd',
+    villageNameHi: 'रातीबड़ खुर्द',
+    cropId: 'soybean',
+    cropStageEn: 'Pod Development & Seed Filling',
+    cropStageHi: 'फली विकास एवं दाना भराव',
+    soilCondition: 'waterlogged',
+    observedRainfallCategory: 'heavy',
+    observedRainfallMm: 28.0,
+    pestSymptomsEn: 'No serious insect pest, root stress due to standing water',
+    pestSymptomsHi: 'कीट नहीं, जलभराव से जड़ तनाव',
+    cropStressNotesEn: 'Water standing in lower field section (approx 1 foot depth) since yesterday night.',
+    cropStressNotesHi: 'कल रात से निचले खेत में 1 फीट पानी भरा हुआ है।',
+    latitude: 23.1765,
+    longitude: 77.3341,
+    submittedAt: '2026-09-12T09:30:00+05:30',
+    status: 'pending',
+    reviewNotesEn: 'Pending field officer inspection.',
+    reviewNotesHi: 'फील्ड अधिकारी निरीक्षण हेतु लंबित।'
+  },
+  {
+    id: 'obs-003',
+    farmerName: 'Dinesh Dangi (दिनेश दांगी)',
+    contactNumber: '98930XXXXX',
+    panchayatId: 'samasgarh',
+    panchayatNameEn: 'Samasgarh',
+    panchayatNameHi: 'समसगढ़',
+    villageNameEn: 'Samasgarh Forest Border',
+    villageNameHi: 'समसगढ़ वन सीमा',
+    cropId: 'soybean',
+    cropStageEn: 'Flowering & Blooming',
+    cropStageHi: 'पुष्प अवस्था',
+    soilCondition: 'wet',
+    observedRainfallCategory: 'moderate',
+    observedRainfallMm: 22.0,
+    pestSymptomsEn: 'Brown fungal spots on lower leaves',
+    pestSymptomsHi: 'निचली पत्तियों पर कवक के भूरे धब्बे',
+    cropStressNotesEn: 'Spotted concentric circular dark lesions on lower leaves after heavy humidity.',
+    cropStressNotesHi: 'अधिक नमी के बाद पत्तियों पर गोल भूरे धब्बे दिखे।',
+    latitude: 23.2112,
+    longitude: 77.2634,
+    submittedAt: '2026-09-12T08:00:00+05:30',
+    status: 'pending'
+  }
+];
